@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { marked } from 'marked';
+import { log } from "console";
+import { fileURLToPath } from "url";
 import { createPostPages } from './createPostPages.js';
 
 /**
@@ -19,22 +21,22 @@ export function convert(inputDir, outputDir, baseUrl = "") {
             fs.mkdirSync(outputDir, { recursive: true });
             console.log(`출력 디렉토리 생성: ${outputDir}`);
         }
-
         const entries = fs.readdirSync(inputDir, { withFileTypes: true });
 
         for (const entry of entries) {
             const inputPath = path.join(inputDir, entry.name);
             const outputPath = path.join(outputDir, entry.name);
+            log("entry: " + entry.name);
 
             try {
                 if (entry.isDirectory()) {
-                    if (entry.name === 'posting') {
-                        // posting 폴더를 만나면 자동으로 createPost 호출
-                        console.log(`포스팅 폴더 발견: ${inputPath}`);
-                        createPostPages();
-                        continue; // convert의 기본 재귀는 타지 않음
-                    }
 
+                    //posting 디렉토리를 만날 경우에는 createPostPages()로 처리
+                    if (entry.name === "posting") {
+                        log("posting 디렉토리 발견: " + inputPath);
+                        createPostPages();
+                        continue;
+                    }
                     const children = convert(inputPath, outputPath, baseUrl + "/" + entry.name);
                     result.push({
                         type: "dir",
@@ -63,10 +65,7 @@ export function convert(inputDir, outputDir, baseUrl = "") {
                     const md = fs.readFileSync(item.fullPath, "utf-8");
 
                     let htmlContent = marked(md);
-                    // log("변환 후 ");
-                    // log(htmlContent);
 
-                    // 후처리: a태그의 href 중 .md → .html (앵커/쿼리 유지)
                     //   예: href="foo.md#bar" → href="foo.html#bar"
                     htmlContent = htmlContent.replace(
                         /href="([^"]+?)\.md(\#[^"]*)?"/gi,
@@ -75,6 +74,8 @@ export function convert(inputDir, outputDir, baseUrl = "") {
 
                     // 👉 HTML 코드 들여쓰기 적용
                     const prettyHtml = prettyFormat(htmlContent);
+
+
 
                     const finalOutputPath = path.join(outputDir, `${item.name}.html`);
                     fs.writeFileSync(finalOutputPath, prettyHtml, "utf-8");
@@ -91,12 +92,10 @@ export function convert(inputDir, outputDir, baseUrl = "") {
 
 }
 
-
-function prettyFormat(html) {
+export function prettyFormat(html) {
     const tokens = html
         .replace(/></g, ">\n<") // 태그 사이에 줄바꿈 삽입
         .split("\n");
-
     let indent = 0;
     return tokens
         .map(line => {
@@ -104,9 +103,7 @@ function prettyFormat(html) {
                 // 닫는 태그면 들여쓰기 감소
                 indent = Math.max(indent - 2, 0);
             }
-
             const result = " ".repeat(indent) + line.trim();
-
             if (/^<\w[^>]*[^/]>$/.test(line) && !/^<br/.test(line)) {
                 // 여는 태그면 들여쓰기 증가 (단, <br/> 같은 단일 태그 제외)
                 indent += 2;
