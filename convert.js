@@ -4,6 +4,7 @@ import { marked } from 'marked';
 import { log } from "console";
 import { fileURLToPath } from "url";
 import { createPostPages } from './createPostPages.js';
+import { createPages } from './createPages.js';
 
 /**
  * @param {string} inputDir - 입력 디렉토리 경로
@@ -14,7 +15,6 @@ import { createPostPages } from './createPostPages.js';
 export function convert(inputDir, outputDir, baseUrl = "") {
 
     const result = [];
-
     try {
         // outputDir이 존재하지 않는 경우, 폴더 생성
         if (!fs.existsSync(outputDir)) {
@@ -26,17 +26,17 @@ export function convert(inputDir, outputDir, baseUrl = "") {
         for (const entry of entries) {
             const inputPath = path.join(inputDir, entry.name);
             const outputPath = path.join(outputDir, entry.name);
-            log("entry: " + entry.name);
-
+            // log("entry: "+entry.name); 
             try {
                 if (entry.isDirectory()) {
 
                     //posting 디렉토리를 만날 경우에는 createPostPages()로 처리
                     if (entry.name === "posting") {
-                        log("posting 디렉토리 발견: " + inputPath);
-                        createPostPages();
+                        // log("posting 디렉토리 발견: " + inputPath);
+                        createPostPages(inputDir, outputDir, baseUrl);
                         continue;
                     }
+
                     const children = convert(inputPath, outputPath, baseUrl + "/" + entry.name);
                     result.push({
                         type: "dir",
@@ -54,7 +54,7 @@ export function convert(inputDir, outputDir, baseUrl = "") {
                     });
                 }
             } catch (err) {
-                console.error(`탐색 오류 발생: ${inputPath} → ${err.message}`);
+                console.error(`탐색 오류 발생: ${inputPath} → ${err.message} - convert.js`);
             }
         }
         result.sort((a, b) => a.name.localeCompare(b.name, "en", { numeric: true }));
@@ -79,11 +79,15 @@ export function convert(inputDir, outputDir, baseUrl = "") {
 
                     const finalOutputPath = path.join(outputDir, `${item.name}.html`);
                     fs.writeFileSync(finalOutputPath, prettyHtml, "utf-8");
-                    console.log(`변환 완료: ${item.fullPath} → ${finalOutputPath}`);
+                    console.log(`✅ 변환 완료: ${item.fullPath} → ${finalOutputPath}`);
+
                 } catch (err) {
                     console.error(`변환 오류 발생: ${item.fullPath} → ${err.message}`);
                 }
             }
+        }
+        if (baseUrl === "") {
+            createPages(inputDir, outputDir, baseUrl);
         }
 
     } catch (err) {

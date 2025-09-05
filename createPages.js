@@ -33,17 +33,17 @@ function readHtmlFragments(dirPath) {
 }
 
 /** 템플릿의 placeholder를 섹션별 HTML로 치환하여 result/index.html 생성 */
-export function createPages() {
+export function createPages(inputDir, outputDir, baseUrl) {
 
     const baseDir = __dirname;
-    console.log("path: " + path);
+    // console.log("path: " + path);
     // 템플릿 읽기
     const templatePath = path.join(baseDir, "customTemplate.html");
-    log("base: " + baseDir + "templatePath: " + templatePath);
+    // log("base: " + baseDir + "templatePath: " + templatePath);
     let template = fs.readFileSync(templatePath, "utf-8");
 
     // 섹션 폴더에서 조각 읽기 (result/ 기준)
-    const resultDir = path.join(baseDir, "result");
+    const resultDir = outputDir;
 
     const allFragments = readHtmlFragments(resultDir);
 
@@ -55,14 +55,4 @@ export function createPages() {
     fs.writeFileSync(path.join(resultDir, "index.html"), template, "utf-8");
 
     console.log(`✅ Built: ${path.join(resultDir, "index.html")}`);
-}
-
-function extractProjects(htmlString) {
-    // <h3>로 시작해서 </ul>로 끝나는 블록을 모두 찾기
-    const regex = /<h3[\s\S]*?<\/ul>/g;
-    const matches = (htmlString.match(regex) || [])
-        .map(block => `<article class="card">\n${block}\n</article>`)
-        .join("\n");
-
-    return matches;
 }
