@@ -38,7 +38,7 @@ function readHtmlFragments(dirPath) {
 
 function readMdFiles(readDir, writeDir, baseUrl = "") {
     const template = fs.readFileSync(templatePath, "utf-8");
-    // log(templatePath);
+    // log("template: " + templatePath);
     // log(template);
 
 
@@ -51,7 +51,7 @@ function readMdFiles(readDir, writeDir, baseUrl = "") {
         if (entry.isDirectory()) {
             // 하위 디렉토리 구조 그대로 writeDir에 생성
             const newWriteDir = path.join(writeDir, entry.name);
-            log("new" + newWriteDir);
+            // log("new" +  newWriteDir);
             if (!fs.existsSync(newWriteDir)) fs.mkdirSync(newWriteDir, { recursive: true });
             readMdFiles(fullReadPath, newWriteDir);
         }
@@ -86,8 +86,8 @@ export function createPostPages(inputDir, outputDir, baseUrl) {
     // md 읽어서 html 변환 -> 템플릿과 합친 후 html 다시 덮어쓰기
     readMdFiles(inputDir, outputDir);
 
-    const templatePath = path.join(baseDir, "result/posting/postMainTemplate.html");
-
+    const templatePath = path.join(process.cwd(), "result/posting/postMainTemplate.html");
+    // log("templatePath: " + templatePath);
     let template = fs.readFileSync(templatePath, "utf-8");
 
     // log("template 대체 전: " + template);

@@ -34,11 +34,34 @@ if (userRoot.includes('node_modules')) {
 }
 
 // 실제 복사
-copyFolder(path.join(pkgRoot, 'profile'), path.join(userRoot, 'profile'));
-copyFolder(path.join(pkgRoot, 'result'), path.join(userRoot, 'result'));
-fs.copyFileSync(
-    path.join(pkgRoot, 'customTemplate.html'),
-    path.join(userRoot, 'customTemplate.html')
-);
+// profile 폴더 복사
+const profileSrc = path.join(pkgRoot, 'profile');
+const profileDest = path.join(userRoot, 'profile');
+if (!fs.existsSync(profileDest)) {
+    copyFolder(profileSrc, profileDest);
+    console.log('[post-converter] Copied folder: profile');
+} else {
+    console.log('[post-converter] Skip folder (already exists): profile');
+}
 
-console.log('[post-converter] Template files copied to:', userRoot);
+// result 폴더 복사
+const resultSrc = path.join(pkgRoot, 'result');
+const resultDest = path.join(userRoot, 'result');
+if (!fs.existsSync(resultDest)) {
+    copyFolder(resultSrc, resultDest);
+    console.log('[post-converter] Copied folder: result');
+} else {
+    console.log('[post-converter] Skip folder (already exists): result');
+}
+
+// customTemplate.html 복사
+const templateSrc = path.join(pkgRoot, 'customTemplate.html');
+const templateDest = path.join(userRoot, 'customTemplate.html');
+if (!fs.existsSync(templateDest)) {
+    fs.copyFileSync(templateSrc, templateDest);
+    console.log('[post-converter] Copied file: customTemplate.html');
+} else {
+    console.log('[post-converter] Skip file (already exists): customTemplate.html');
+}
+
+console.log('[post-converter] Template copy process finished.');

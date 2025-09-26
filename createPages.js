@@ -38,7 +38,7 @@ export function createPages(inputDir, outputDir, baseUrl) {
     const baseDir = __dirname;
     // console.log("path: " + path);
     // 템플릿 읽기
-    const templatePath = path.join(baseDir, "customTemplate.html");
+    const templatePath = path.join(process.cwd(), "customTemplate.html");
     // log("base: " + baseDir + "templatePath: " + templatePath);
     let template = fs.readFileSync(templatePath, "utf-8");
 
@@ -46,13 +46,20 @@ export function createPages(inputDir, outputDir, baseUrl) {
     const resultDir = outputDir;
 
     const allFragments = readHtmlFragments(resultDir);
-
+    // log(allFragments);
     for (const fragment of allFragments) {
         const regex = new RegExp(`{{\\s*${fragment.name}\\s*}}`, "g");
         template = template.replace(regex, fragment.content);
     }
 
-    fs.writeFileSync(path.join(resultDir, "index.html"), template, "utf-8");
+    // 사용자 프로젝트 루트 경로 (실행 위치)
+    const userRoot = process.env.INIT_CWD && !process.env.INIT_CWD.includes('node_modules')
+        ? process.env.INIT_CWD
+        : process.cwd();
 
-    console.log(`✅ Built: ${path.join(resultDir, "index.html")}`);
+    // 루트에 postConverterIndex.html 저장
+    const outputPath = path.join(userRoot, "postConverterIndex.html");
+    fs.writeFileSync(outputPath, template, "utf-8");
+
+    console.log(`✅ Built: ${outputPath}`);
 }
